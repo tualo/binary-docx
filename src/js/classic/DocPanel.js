@@ -19,7 +19,7 @@ Ext.define('Tualo.binary.docx.views.DocPanel', {
 
     loadDocument: async function (id) {
         let json = await (await fetch('./binary-docx/register/' + id)).json();
-        this.getComponent('docIframe').setSrc('https://view.officeapps.live.com/op/embed.aspx?src=' + json.url);
+        this.getComponent('docIframe').load('https://view.officeapps.live.com/op/embed.aspx?src=' + json.url);
     },
 
     items: [
