@@ -13,6 +13,22 @@ class Open implements IRoute
     public static function register()
     {
 
+        BasicRoute::add('/binary-docx/register/(?P<id>.+)', function ($matches) {
+            $session = App::get('session');
+
+            $token = $session->registerOAuth(
+                // $params = ['cmp' => 'cmp_ds'],
+                $force = true,
+                $anyclient = false,
+                $path = '/binary-docx/open/' . $matches['id'],
+                $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : '',
+                $device = isset($_REQUEST['device']) ? $_REQUEST['device'] : '',
+            );
+            $session->oauthValidDays($token, 1);
+            App::contenttype('application/json');
+            App::result('success', true);
+            App::result('url', App::configuration('binary_docx', 'base_url', '.') . '/~/' . $token . '/binary-docx/open/' . $matches['id']);
+        }, ['get', 'post'], true);
 
 
         BasicRoute::add('/binary-docx/open/(?P<id>.+)', function ($matches) {

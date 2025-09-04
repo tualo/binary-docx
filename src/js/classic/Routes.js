@@ -14,7 +14,7 @@ Ext.define('Tualo.routes.binary.docx.Viewer', {
 
         action: function (values) {
             Ext.getApplication().addView('Tualo.binary.docx.views.DocPanel', {
-                id: values.id
+                documentId: values.id
             });
         },
         before: function (values, action) {
