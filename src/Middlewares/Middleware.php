@@ -1,6 +1,6 @@
 <?php
 
-namespace Tualo\Office\FibuConv\Middlewares;
+namespace Tualo\Office\BinaryDocx\Middlewares;
 
 use Tualo\Office\Basic\TualoApplication as App;
 use Tualo\Office\Basic\IMiddleware;

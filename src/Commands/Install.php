@@ -1,7 +1,7 @@
 <?php
 
 /*
-namespace Tualo\Office\FibuConv\Commands;
+namespace Tualo\Office\BinaryDocx\Commands;
 
 use Garden\Cli\Cli;
 use Garden\Cli\Args;

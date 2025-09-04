@@ -1,6 +1,6 @@
 <?php
 
-namespace Tualo\Office\FibuConv;
+namespace Tualo\Office\BinaryDocx;
 
 use Tualo\Office\Basic\TualoApplication;
 use Tualo\Office\ExtJSCompiler\ICompiler;
