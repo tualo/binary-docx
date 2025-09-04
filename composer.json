@@ -1,0 +1,25 @@
+{
+  "name": "tualo/binary-docx",
+  "description": "tualo - binary-docx",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Thomas Hoffmann",
+      "email": "thomas.hoffmann@tualo.de"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Tualo\\Office\\BinaryDocx\\": "src/"
+    },
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "minimum-stability": "dev",
+  "require": {
+    "ramsey/uuid": "~4.9.0",
+    "tualo/ds": "^1.0"
+  }
+}
