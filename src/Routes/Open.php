@@ -24,7 +24,7 @@ class Open implements IRoute
                 $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : '',
                 $device = isset($_REQUEST['device']) ? $_REQUEST['device'] : '',
             );
-            $session->oauthValidDays($token, 1);
+            $session->oauthSingleUse($token);
             App::contenttype('application/json');
             App::result('success', true);
             App::result('url', App::configuration('binary_docx', 'base_url', '.') . '/~/' . $token . '/binary-docx/open/' . $matches['id'] . '.docx');
