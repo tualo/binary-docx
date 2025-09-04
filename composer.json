@@ -21,5 +21,6 @@
   "require": {
     "ramsey/uuid": "~4.9.0",
     "tualo/ds": "^1.0"
-  }
+  },
+  "version": "1.0.2"
 }
