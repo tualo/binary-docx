@@ -20,18 +20,18 @@ class Open implements IRoute
                 // $params = ['cmp' => 'cmp_ds'],
                 $force = true,
                 $anyclient = false,
-                $path = '/binary-docx/open/' . $matches['id'],
+                $path = '/binary-docx/open/' . $matches['id'] . '.docx',
                 $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : '',
                 $device = isset($_REQUEST['device']) ? $_REQUEST['device'] : '',
             );
             $session->oauthValidDays($token, 1);
             App::contenttype('application/json');
             App::result('success', true);
-            App::result('url', App::configuration('binary_docx', 'base_url', '.') . '/~/' . $token . '/binary-docx/open/' . $matches['id']);
+            App::result('url', App::configuration('binary_docx', 'base_url', '.') . '/~/' . $token . '/binary-docx/open/' . $matches['id'] . '.docx');
         }, ['get', 'post'], true);
 
 
-        BasicRoute::add('/binary-docx/open/(?P<id>.+)', function ($matches) {
+        BasicRoute::add('/binary-docx/open/(?P<id>.+).docx', function ($matches) {
             $db = App::get('session')->getDB();
             App::contenttype('application/json');
 
@@ -49,8 +49,11 @@ class Open implements IRoute
                 header('Content-Disposition: attachment; filename="' . $matches['id'] . '.docx"');
 
 
-                App::contenttype('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+                header('Content-Type: application/msword');
+                http_response_code(200);
+                //App::contenttype('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
                 echo base64_decode($files[0]['base64_backup']);
+                exit();
             }
         }, ['get', 'post'], true);
     }
