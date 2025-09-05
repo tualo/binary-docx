@@ -23,6 +23,7 @@ class Open implements IRoute
                 $path = '/binary-docx/open/' . $matches['id'] . '.docx',
                 $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : '',
                 $device = isset($_REQUEST['device']) ? $_REQUEST['device'] : '',
+
             );
             $session->oauthSingleUse($token);
             App::contenttype('application/json');
@@ -52,7 +53,12 @@ class Open implements IRoute
                 header('Content-Type: application/msword');
                 http_response_code(200);
                 //App::contenttype('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-                echo base64_decode($files[0]['base64_backup']);
+                //echo base64_decode($files[0]['base64_backup']);
+                if (!is_null($files[0]['doc_data'])) {
+                    echo $files[0]['doc_data'];
+                } else {
+                    echo base64_decode($files[0]['base64_backup']);
+                }
                 exit();
             }
         }, ['get', 'post'], true);
