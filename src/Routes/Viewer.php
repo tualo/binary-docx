@@ -57,10 +57,16 @@ class Viewer implements IRoute
                     $readerType = 'MsDoc';
                     $ext = 'doc';
                 }
+                if ($files['detected_by_strings'] == 'Microsoft Word 97-2004-Dokument (doc)') {
+                    $readerType = 'MsDoc';
+                    $ext = 'doc';
+                }
                 if ($files['detected_by_strings'] == 'Microsoft Word-Dokument (doc)') {
                     $readerType = 'MsDoc';
                     $ext = 'doc';
                 }
+
+                // echo $files['detected_by_strings'];
 
 
                 $tempFile = App::get('tempPath') . '/' . (U::uuid4())->toString() . '.' . $ext;
@@ -69,6 +75,12 @@ class Viewer implements IRoute
                 file_put_contents($tempFile, $data);
 
                 $phpWord = \PhpOffice\PhpWord\IOFactory::load($tempFile);
+
+                /*
+                $phpWord = IOFactory::createReader($readerType);
+                $phpWord->load($tempFile);
+*/
+
                 $htmlWriter = new \PhpOffice\PhpWord\Writer\HTML($phpWord);
                 $htmlWriter->save($tempFile2);
 
