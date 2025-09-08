@@ -14,7 +14,7 @@ class Viewer implements IRoute
 {
 
 
-    private static function removeImageReferences($zip, $placeholderImagePath)
+    private static function removeImageReferences($zip)
     {
         $relsPath = 'word/_rels/document.xml.rels';
         $relsContent = $zip->getFromName($relsPath);
@@ -22,6 +22,7 @@ class Viewer implements IRoute
         $relsXml = new \SimpleXMLElement($relsContent);
         $imagePaths = [];
         $appendimagePaths = [];
+        $unlinkFiles = [];
 
         foreach ($relsXml->Relationship as $relationship) {
             if (strpos($relationship['Type'], 'image') !== false) {
@@ -31,13 +32,24 @@ class Viewer implements IRoute
 
                 $data =   $zip->getFromName('word/' . $relationship['Target']);
                 if ($data !== false) {
-                    file_put_contents(App::get('tempPath') . '/' . $relationship['Target'], $data);
-                    $dest = self::convertImage(App::get('tempPath') . '/' . $relationship['Target']);
-                    // Replace the image target with a placeholder image reference
-                    $imagePaths[] = 'word/' . $relationship['Target'];
-                    $placeholderImageTarget = 'media/' . basename($dest);
-                    $relationship['Target'] = $placeholderImageTarget;
-                    $appendimagePaths[$dest] = $placeholderImageTarget;
+                    file_put_contents(App::get('tempPath') . '/' .  basename($relationship['Target']), $data);
+                    $unlinkFiles[] = App::get('tempPath') . '/' .  basename($relationship['Target']);
+
+                    $path_info = pathinfo(App::get('tempPath') . '/' .  basename($relationship['Target']));
+
+                    if (strtolower($path_info['extension']) === 'eml') {
+
+
+
+                        $dest = self::convertImageEML(App::get('tempPath') . '/' .  basename($relationship['Target']));
+                        $unlinkFiles[] = $dest;
+
+                        // Replace the image target with a placeholder image reference
+                        $imagePaths[] = 'word/' . $relationship['Target'];
+                        $placeholderImageTarget = 'media/' . basename($dest);
+                        $relationship['Target'] = $placeholderImageTarget;
+                        $appendimagePaths[$dest] = $placeholderImageTarget;
+                    }
                 }
             }
         }
@@ -54,43 +66,29 @@ class Viewer implements IRoute
         foreach ($appendimagePaths as $fileName => $imagePath) {
             $zip->addFile($fileName, 'word/' . $imagePath);
         }
+
+        foreach ($unlinkFiles as $fileName) {
+            unlink($fileName);
+        }
         // Add the placeholder image to the zip archive
 
     }
 
-    private static function convertImage(string $src): string
+    private static function convertImageEML(string $src): string
     {
         $dest = $src . '.png';
+        /*
         $im = new \Imagick();
         $im->pingImage($src);
         $im->readImage($src);
         // $im->resizeImage($width, $height, \Imagick::FILTER_CATROM, 1, TRUE);
         $im->setImageFormat("png");
         $im->writeImage($dest);
+        */
+        exec('inkscape -o "$dest" "$src"');
         return $dest;
     }
 
-
-    private static function getPlaceholderImage()
-    {
-        $placeholderImagePath = App::get('tempPath') . '/placeholder.png';
-
-        if (!file_exists($placeholderImagePath)) {
-            $width = 1;
-            $height = 1;
-            $color = [255, 255, 255]; // RGB value for white color
-            $image = imagecreatetruecolor($width, $height);
-            $color = imagecolorallocate($image, $color[0], $color[1], $color[2]);
-            imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, $color);
-            ob_start();
-            imagepng($image);
-            $imageData = ob_get_contents();
-            ob_end_clean();
-            file_put_contents($placeholderImagePath, $imageData);
-        }
-
-        return  $placeholderImagePath;
-    }
 
 
     public static function register()
@@ -155,10 +153,10 @@ class Viewer implements IRoute
 
                 if ($ext == 'docx') {
                     $zip = new \ZipArchive();
-                    $placeholderImagePath = self::getPlaceholderImage();
+
 
                     $zip->open($tempFile);
-                    self::removeImageReferences($zip, $placeholderImagePath);
+                    self::removeImageReferences($zip);
                     $zip->close();
                 }
 
