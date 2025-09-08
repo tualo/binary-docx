@@ -91,6 +91,55 @@ class Viewer implements IRoute
     public static function register()
     {
 
+        // 
+        BasicRoute::add('/binary-docx/libreoffice/(?P<id>.+)', function ($matches) {
+            $db = App::get('session')->getDB();
+            App::contenttype('application/json');
+
+
+
+
+            if ($db == NULL) {
+                App::result('msg', 'Nicht erlaubt');
+            } else {
+                $files = $db->singleRow("select * from fb_wvd.doc_binary where document_link = {id}", [
+                    'id' => $matches['id']
+                ]);
+
+
+                if (!is_null($files['doc_data'])) {
+                    $data = $files['doc_data'];
+                } else {
+                    $data = base64_decode($files['base64_backup']);
+                }
+
+                $tempFile = App::get('tempPath') . '/' . (U::uuid4())->toString() . '.' . $ext;
+                $tempFile2 = App::get('tempPath') . '/' . (U::uuid4())->toString() . '.' . 'html';
+
+
+                file_put_contents($tempFile, $data);
+
+
+                exec('soffice --convert-to html:HTML:EmbedImages "' . $tempFile . '" --outdir "' . App::get('tempPath') . '"');
+
+
+                echo file_get_contents($tempFile2);
+
+
+                /*
+
+                
+                $phpWord = IOFactory::createReader($readerType);
+                $phpWord->load($tempFile);
+
+                $objWriter = IOFactory::createWriter($phpWord, 'HTML');
+                $objWriter->save('php://output');
+                */
+                // unlink($tempFile);
+                exit();
+            }
+        }, ['get'], true);
+
         BasicRoute::add('/binary-docx/viewer/(?P<id>.+)', function ($matches) {
             $db = App::get('session')->getDB();
             App::contenttype('application/json');
