@@ -14,7 +14,7 @@ class Viewer implements IRoute
 {
 
 
-    private static function removeImageReferences($zip)
+    private static function removeImageReferences($zip): array
     {
         $relsPath = 'word/_rels/document.xml.rels';
         $relsContent = $zip->getFromName($relsPath);
@@ -37,11 +37,11 @@ class Viewer implements IRoute
 
                     $path_info = pathinfo(App::get('tempPath') . '/' .  basename($relationship['Target']));
 
-                    if (strtolower($path_info['extension']) === 'eml') {
+                    if (strtolower($path_info['extension']) === 'emf') {
 
 
 
-                        $dest = self::convertImageEML(App::get('tempPath') . '/' .  basename($relationship['Target']));
+                        $dest = self::convertImageEMF(App::get('tempPath') . '/' .  basename($relationship['Target']));
                         $unlinkFiles[] = $dest;
 
                         // Replace the image target with a placeholder image reference
@@ -67,14 +67,11 @@ class Viewer implements IRoute
             $zip->addFile($fileName, 'word/' . $imagePath);
         }
 
-        foreach ($unlinkFiles as $fileName) {
-            unlink($fileName);
-        }
         // Add the placeholder image to the zip archive
-
+        return  $unlinkFiles;
     }
 
-    private static function convertImageEML(string $src): string
+    private static function convertImageEMF(string $src): string
     {
         $dest = $src . '.png';
         /*
@@ -156,8 +153,11 @@ class Viewer implements IRoute
 
 
                     $zip->open($tempFile);
-                    self::removeImageReferences($zip);
+                    $unlinkFiles = self::removeImageReferences($zip);
                     $zip->close();
+                    foreach ($unlinkFiles as $fileName) {
+                        unlink($fileName);
+                    }
                 }
 
 
