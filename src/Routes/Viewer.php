@@ -113,17 +113,40 @@ class Viewer implements IRoute
                     $data = base64_decode($files['base64_backup']);
                 }
 
+                $ext = 'docx';
+                $readerType = 'Word2007';
+                if ($files['detected_by_strings'] == 'unknown') {
+                    $readerType = 'MsDoc';
+                    $ext = 'doc';
+                }
+                if ($files['detected_by_strings'] == 'Microsoft Office Word 97-2003-Dokument (doc)') {
+                    $readerType = 'MsDoc';
+                    $ext = 'doc';
+                }
+                if ($files['detected_by_strings'] == 'Microsoft Word 97-2004-Dokument (doc)') {
+                    $readerType = 'MsDoc';
+                    $ext = 'doc';
+                }
+                if ($files['detected_by_strings'] == 'Microsoft Word-Dokument (doc)') {
+                    $readerType = 'MsDoc';
+                    $ext = 'doc';
+                }
+
                 $tempFile = App::get('tempPath') . '/' . (U::uuid4())->toString() . '.' . $ext;
-                $tempFile2 = App::get('tempPath') . '/' . (U::uuid4())->toString() . '.' . 'html';
+                $tempFile2 = App::get('tempPath') . '/' . (U::uuid4())->toString() . '/' . 'html';
+
+                mkdir(($tempFile2), 0777, true);
 
 
                 file_put_contents($tempFile, $data);
 
 
-                exec('soffice --convert-to html:HTML:EmbedImages "' . $tempFile . '" --outdir "' . App::get('tempPath') . '"');
+                $a = [];
+                $r = 0;
+                exec('/usr/bin/soffice --headless -env:UserInstallation=file:///tmp/test --convert-to html:HTML:EmbedImages "' . $tempFile . '" --outdir "' . $tempFile2 . '"', $a, $r);
 
 
-                echo file_get_contents($tempFile2);
+                echo file_get_contents($tempFile2 . '/' . basename($tempFile, $ext) . 'html');
 
 
                 /*
@@ -135,7 +158,8 @@ class Viewer implements IRoute
                 $objWriter = IOFactory::createWriter($phpWord, 'HTML');
                 $objWriter->save('php://output');
                 */
-                // unlink($tempFile);
+                unlink($tempFile);
+                unlink($tempFile2 . '/' . basename($tempFile, $ext) . 'html');
                 exit();
             }
         }, ['get'], true);
