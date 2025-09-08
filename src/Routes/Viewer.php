@@ -139,7 +139,6 @@ class Viewer implements IRoute
                 }
 
 
-                $phpWord = IOFactory::load($tempFilePath);
 
 
                 $phpWord = \PhpOffice\PhpWord\IOFactory::load($tempFile);
