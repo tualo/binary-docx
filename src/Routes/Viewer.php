@@ -21,15 +21,24 @@ class Viewer implements IRoute
 
         $relsXml = new \SimpleXMLElement($relsContent);
         $imagePaths = [];
+        $appendimagePaths = [];
 
         foreach ($relsXml->Relationship as $relationship) {
             if (strpos($relationship['Type'], 'image') !== false) {
                 // Store the original image path
-                $imagePaths[] = 'word/' . $relationship['Target'];
 
-                // Replace the image target with a placeholder image reference
-                $placeholderImageTarget = 'media/placeholder.png';
-                $relationship['Target'] = $placeholderImageTarget;
+
+
+                $data =   $zip->getFromName('word/' . $relationship['Target']);
+                if ($data !== false) {
+                    file_put_contents(App::get('tempPath') . '/' . $relationship['Target'], $data);
+                    $dest = self::convertImage(App::get('tempPath') . '/' . $relationship['Target']);
+                    // Replace the image target with a placeholder image reference
+                    $imagePaths[] = 'word/' . $relationship['Target'];
+                    $placeholderImageTarget = 'media/' . basename($dest);
+                    $relationship['Target'] = $placeholderImageTarget;
+                    $appendimagePaths[$dest] = $placeholderImageTarget;
+                }
             }
         }
 
@@ -42,8 +51,23 @@ class Viewer implements IRoute
             $zip->deleteName($imagePath);
         }
 
+        foreach ($appendimagePaths as $fileName => $imagePath) {
+            $zip->addFile($fileName, 'word/' . $imagePath);
+        }
         // Add the placeholder image to the zip archive
-        $zip->addFile($placeholderImagePath, 'word/' . $placeholderImageTarget);
+
+    }
+
+    private static function convertImage(string $src): string
+    {
+        $dest = $src . '.png';
+        $im = new \Imagick();
+        $im->pingImage($src);
+        $im->readImage($src);
+        // $im->resizeImage($width, $height, \Imagick::FILTER_CATROM, 1, TRUE);
+        $im->setImageFormat("png");
+        $im->writeImage($dest);
+        return $dest;
     }
 
 
