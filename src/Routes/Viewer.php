@@ -19,7 +19,7 @@ class Viewer implements IRoute
         $relsPath = 'word/_rels/document.xml.rels';
         $relsContent = $zip->getFromName($relsPath);
 
-        $relsXml = new SimpleXMLElement($relsContent);
+        $relsXml = new \SimpleXMLElement($relsContent);
         $imagePaths = [];
 
         foreach ($relsXml->Relationship as $relationship) {
@@ -130,11 +130,11 @@ class Viewer implements IRoute
                 file_put_contents($tempFile, $data);
 
                 if ($ext == 'docx') {
-                    $zip = new ZipArchive();
+                    $zip = new \ZipArchive();
                     $placeholderImagePath = self::getPlaceholderImage();
 
                     $zip->open($tempFile);
-                    $this->removeImageReferences($zip, $placeholderImagePath);
+                    self::removeImageReferences($zip, $placeholderImagePath);
                     $zip->close();
                 }
 
