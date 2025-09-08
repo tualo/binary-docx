@@ -85,7 +85,7 @@ class Viewer implements IRoute
         $im->setImageFormat("png");
         $im->writeImage($dest);
         */
-        exec('inkscape -o "$dest" "$src"');
+        exec('inkscape -o "' . $dest . '" "' . $src . '"');
         return $dest;
     }
 
