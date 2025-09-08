@@ -14,6 +14,61 @@ class Viewer implements IRoute
 {
 
 
+    private static function removeImageReferences($zip, $placeholderImagePath)
+    {
+        $relsPath = 'word/_rels/document.xml.rels';
+        $relsContent = $zip->getFromName($relsPath);
+
+        $relsXml = new SimpleXMLElement($relsContent);
+        $imagePaths = [];
+
+        foreach ($relsXml->Relationship as $relationship) {
+            if (strpos($relationship['Type'], 'image') !== false) {
+                // Store the original image path
+                $imagePaths[] = 'word/' . $relationship['Target'];
+
+                // Replace the image target with a placeholder image reference
+                $placeholderImageTarget = 'media/placeholder.png';
+                $relationship['Target'] = $placeholderImageTarget;
+            }
+        }
+
+        // Update the relationships file
+        $zip->deleteName($relsPath);
+        $zip->addFromString($relsPath, $relsXml->asXML());
+
+        // Delete the original image files
+        foreach ($imagePaths as $imagePath) {
+            $zip->deleteName($imagePath);
+        }
+
+        // Add the placeholder image to the zip archive
+        $zip->addFile($placeholderImagePath, 'word/' . $placeholderImageTarget);
+    }
+
+
+    private static function getPlaceholderImage()
+    {
+        $placeholderImagePath = App::get('tempPath') . '/placeholder.png';
+
+        if (!file_exists($placeholderImagePath)) {
+            $width = 1;
+            $height = 1;
+            $color = [255, 255, 255]; // RGB value for white color
+            $image = imagecreatetruecolor($width, $height);
+            $color = imagecolorallocate($image, $color[0], $color[1], $color[2]);
+            imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, $color);
+            ob_start();
+            imagepng($image);
+            $imageData = ob_get_contents();
+            ob_end_clean();
+            file_put_contents($placeholderImagePath, $imageData);
+        }
+
+        return  $placeholderImagePath;
+    }
+
+
     public static function register()
     {
 
@@ -73,6 +128,19 @@ class Viewer implements IRoute
                 $tempFile2 = App::get('tempPath') . '/' . (U::uuid4())->toString() . '.' . 'html';
 
                 file_put_contents($tempFile, $data);
+
+                if ($ext == 'docx') {
+                    $zip = new ZipArchive();
+                    $placeholderImagePath = self::getPlaceholderImage();
+
+                    $zip->open($tempFile);
+                    $this->removeImageReferences($zip, $placeholderImagePath);
+                    $zip->close();
+                }
+
+
+                $phpWord = IOFactory::load($tempFilePath);
+
 
                 $phpWord = \PhpOffice\PhpWord\IOFactory::load($tempFile);
 
