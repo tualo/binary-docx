@@ -10,7 +10,7 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use Ramsey\Uuid\Uuid as U;
 
-class Viewer implements IRoute
+class Viewer extends \Tualo\Office\Basic\RouteWrapper
 {
 
 
