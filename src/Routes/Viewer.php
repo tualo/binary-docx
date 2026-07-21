@@ -241,7 +241,7 @@ class Viewer extends \Tualo\Office\Basic\RouteWrapper
                 /*
                 $phpWord = IOFactory::createReader($readerType);
                 $phpWord->load($tempFile);
-*/
+                */
 
                 $htmlWriter = new \PhpOffice\PhpWord\Writer\HTML($phpWord);
                 $htmlWriter->save($tempFile2);
