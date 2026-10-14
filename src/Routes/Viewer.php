@@ -74,15 +74,24 @@ class Viewer extends \Tualo\Office\Basic\RouteWrapper
     private static function convertImageEMF(string $src): string
     {
         $dest = $src . '.png';
-        /*
-        $im = new \Imagick();
-        $im->pingImage($src);
-        $im->readImage($src);
-        // $im->resizeImage($width, $height, \Imagick::FILTER_CATROM, 1, TRUE);
-        $im->setImageFormat("png");
-        $im->writeImage($dest);
-        */
-        exec('inkscape -o "' . $dest . '" "' . $src . '"');
+        $output = [];
+        $exitCode = 0;
+        exec(
+            'inkscape --export-type=png --export-filename=' . escapeshellarg($dest)
+                . ' ' . escapeshellarg($src) . ' 2>&1',
+            $output,
+            $exitCode
+        );
+        $imageInfo = is_file($dest) ? @getimagesize($dest) : false;
+        if ($exitCode !== 0 || $imageInfo === false || $imageInfo[2] !== IMAGETYPE_PNG) {
+            if (is_file($dest)) {
+                unlink($dest);
+            }
+            throw new \RuntimeException(
+                'EMF-to-PNG conversion failed for ' . basename($src)
+                    . ' (Inkscape exit code ' . $exitCode . '): ' . implode("\n", $output)
+            );
+        }
         return $dest;
     }
 
